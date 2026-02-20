@@ -1,0 +1,37 @@
+{
+  "name": "Alumni Connect-backend",
+  "version": "1.0.0",
+  "description": "Alumni Connect Alumni Platform Backend API",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "alumni",
+    "platform",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.3.1",
+    "form-data": "^4.0.5",
+    "jsonwebtoken": "^9.0.3",
+    "mailgun.js": "^12.4.0",
+    "mongoose": "^8.20.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.11",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
