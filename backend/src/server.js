@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
 
@@ -15,20 +17,28 @@ import mentorshipRoutes from './routes/mentorshipRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import feedRoutes from './routes/feedRoutes.js';
+import galleryRoutes from './routes/galleryRoutes.js';
+import newsletterRoutes from './routes/newsletterRoutes.js';
+
 dotenv.config();
 const app = express();
+const httpServer = createServer(app);
 app.set("trust proxy", 1);
 
 // 📌 DB
 connectDB();
 
+// 📌 CORS origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:8080",
+  "https://alumnni-connect.netlify.app",
+];
+
 // 📌 Middlewares
 app.use(cors({
-  origin:[
-    "http://localhost:5173",                  // Dev
-    "https://alumnni-connect.netlify.app"    // Netlify frontend
-  ],
-    credentials: true,
+  origin: allowedOrigins,
+  credentials: true,
 }));
 
 app.use(express.json());
@@ -62,6 +72,9 @@ app.use('/api/mentorship', mentorshipRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/feed', feedRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/newsletters', newsletterRoutes);
+
 // ❗404 Handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
@@ -70,6 +83,67 @@ app.use((req, res) => {
 // Global error handler
 app.use(errorHandler);
 
+// 🔌 Socket.io for real-time mentorship chat
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+// Track online users: userId -> socketId
+const onlineUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log('🔌 Socket connected:', socket.id);
+
+  // User registers their userId on connect
+  socket.on('register', (userId) => {
+    onlineUsers.set(userId, socket.id);
+    console.log(`👤 User ${userId} registered with socket ${socket.id}`);
+  });
+
+  // Join a mentorship chat room (conversationId)
+  socket.on('join_chat', (conversationId) => {
+    socket.join(conversationId);
+    console.log(`📥 Socket ${socket.id} joined chat ${conversationId}`);
+  });
+
+  // Leave a chat room
+  socket.on('leave_chat', (conversationId) => {
+    socket.leave(conversationId);
+  });
+
+  // Send a message in real-time
+  socket.on('send_message', (data) => {
+    // data: { conversationId, senderId, content, createdAt }
+    // Broadcast to everyone in the room except sender
+    socket.to(data.conversationId).emit('receive_message', data);
+  });
+
+  // Typing indicator
+  socket.on('typing', (data) => {
+    // data: { conversationId, userId, fullName }
+    socket.to(data.conversationId).emit('user_typing', data);
+  });
+
+  socket.on('stop_typing', (data) => {
+    socket.to(data.conversationId).emit('user_stop_typing', data);
+  });
+
+  socket.on('disconnect', () => {
+    // Remove from online users
+    for (const [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        onlineUsers.delete(userId);
+        break;
+      }
+    }
+    console.log('🔌 Socket disconnected:', socket.id);
+  });
+});
+
 // 🚀 Server start
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));

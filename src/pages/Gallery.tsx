@@ -1,12 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Video, X } from 'lucide-react';
-import { storage } from '../lib/storage';
+import { galleryService, GalleryItem } from '../services/galleryService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Gallery() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const galleryItems = storage.getGalleryItems();
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const data = await galleryService.getItems();
+        setGalleryItems(data);
+      } catch (err) {
+        console.error('Failed to load gallery', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  if (loading) return <div className="text-center py-10 text-gray-500">Loading gallery...</div>;
 
   return (
     <div className="space-y-6">
@@ -18,13 +35,13 @@ export function Gallery() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {galleryItems.map((item, index) => (
           <motion.div
-            key={item.id}
+            key={item._id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
           >
-            <Card hover className="cursor-pointer overflow-hidden p-0">
-              <div onClick={() => setSelectedItem(item.id)}>
+            <Card className="cursor-pointer overflow-hidden p-0">
+              <div onClick={() => setSelectedItem(item._id)}>
                 <div className="relative aspect-video overflow-hidden">
                   <img
                     src={item.mediaUrl}
@@ -49,33 +66,39 @@ export function Gallery() {
         ))}
       </div>
 
+      {galleryItems.length === 0 && (
+        <Card>
+          <div className="text-center py-12">
+            <p className="text-gray-500">No gallery items yet</p>
+          </div>
+        </Card>
+      )}
+
       <AnimatePresence>
         {selectedItem && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedItem(null)}
+          >
+            <button
+              className="absolute top-4 right-4 text-white p-2 hover:bg-white/20 rounded-lg"
               onClick={() => setSelectedItem(null)}
             >
-              <button
-                className="absolute top-4 right-4 text-white p-2 hover:bg-white/20 rounded-lg"
-                onClick={() => setSelectedItem(null)}
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <motion.img
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.8 }}
-                src={galleryItems.find(i => i.id === selectedItem)?.mediaUrl}
-                alt="Full size"
-                className="max-w-full max-h-full rounded-lg"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </motion.div>
-          </>
+              <X className="w-6 h-6" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              src={galleryItems.find(i => i._id === selectedItem)?.mediaUrl}
+              alt="Full size"
+              className="max-w-full max-h-full rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

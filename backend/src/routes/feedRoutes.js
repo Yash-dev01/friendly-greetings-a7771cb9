@@ -1,9 +1,10 @@
 import express from 'express';
 import { getFeed } from '../controllers/feedController.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', protect,authorize('admin'), getFeed);
+// Feed is accessible by all authenticated users
+router.get('/', protect, getFeed);
 
 export default router;
