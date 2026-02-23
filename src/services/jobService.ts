@@ -2,30 +2,36 @@ import { apiService } from './api';
 import { authService } from './authService';
 
 export interface Job {
-  id: string;
+  _id: string;
+  id?: string;
   title: string;
+  role: string;
   company: string;
   location: string;
-  type: 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
-  department: string;
+  type?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
+  employmentType?: string;
+  department?: string;
   description: string;
-  requirements: string[];
-  responsibilities: string[];
+  requirements?: string[] | string;
+  responsibilities?: string[];
   salary?: {
     min: number;
     max: number;
     currency: string;
   };
-  postedBy: {
+  salaryRange?: string;
+  postedBy?: {
     id: string;
     name: string;
     email: string;
   };
-  postedAt: string;
+  postedAt?: string;
   applicationDeadline?: string;
-  status: 'active' | 'closed' | 'filled';
+  status?: 'active' | 'closed' | 'filled';
+  isActive?: boolean;
+  applyLink?: string;
   tags?: string[];
-  experienceLevel: 'entry' | 'mid' | 'senior' | 'executive';
+  experienceLevel?: 'entry' | 'mid' | 'senior' | 'executive';
 }
 
 export interface JobApplication {

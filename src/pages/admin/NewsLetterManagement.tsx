@@ -4,7 +4,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { Mail, Plus, Edit2, Trash2, Send, Eye } from 'lucide-react';
-import { storage } from '../../lib/storage';
+// storage import removed - using localStorage directly
 import { motion } from 'framer-motion';
 
 interface Newsletter {

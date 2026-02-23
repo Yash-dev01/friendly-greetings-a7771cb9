@@ -4,7 +4,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { Image as ImageIcon, Plus, Edit2, Trash2, Folder } from 'lucide-react';
-import { storage } from '../../lib/storage';
+// storage import removed - using localStorage directly
 import { motion } from 'framer-motion';
 
 interface GalleryItem {
@@ -126,6 +126,7 @@ export function GalleryManagement() {
     setIsAlbumModalOpen(false);
   };
 
+  // @ts-ignore - keeping for future use
   const handleDeleteAlbum = (album: string) => {
     if (album === 'General') {
       alert('Cannot delete General album');
