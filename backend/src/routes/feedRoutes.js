@@ -5,6 +5,6 @@ import { protect } from '../middleware/auth.js';
 const router = express.Router();
 
 // Feed is accessible by all authenticated users
-router.get('/', protect, getFeed);
+router.get('/', getFeed);
 
 export default router;
