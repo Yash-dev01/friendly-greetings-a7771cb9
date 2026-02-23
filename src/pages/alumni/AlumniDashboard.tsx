@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { storage } from '../../lib/storage';
 import { useAuth } from '../../context/AuthContext';
 import { MentorshipChat } from '../../components/MentorshipChat';
-import { Briefcase, Newspaper, Image as ImageIcon, Calendar, Heart, MessageSquare } from 'lucide-react';
+import { Briefcase, Calendar, Heart, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { MentorshipChat as MentorshipChatType } from '../../types';
 
@@ -14,7 +14,7 @@ export function AlumniDashboard() {
   const posts = storage.getPosts();
   const events = storage.getEvents();
   const jobs = storage.getJobs();
-  const newsletters = storage.getNewsletters();
+  storage.getNewsletters();
   const mentorshipRequests = storage.getMentorshipRequests().filter(r => r.alumniId === user?.id);
   const acceptedRequests = mentorshipRequests.filter(r => r.status === 'accepted');
 
@@ -76,8 +76,8 @@ export function AlumniDashboard() {
           <div className="space-y-3">
             {acceptedRequests.map((request) => {
               const student = storage.getUserById(request.studentId);
-              const chat = storage.getMentorshipChatByRequestId(request.id);
-              const unreadCount = chat ? chat.messages.filter(m => m.senderId !== user?.id).length : 0;
+              void storage.getMentorshipChatByRequestId(request.id);
+              // unread count available via chat.messages
               return (
                 <div
                   key={request.id}

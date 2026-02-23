@@ -49,7 +49,6 @@ export function ChatBox({ conversationId, otherUser }: ChatBoxProps) {
     try {
       setLoading(true);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       const session = await (window as any).__auth?.getSession?.();
       if (!session?.session?.access_token) return;

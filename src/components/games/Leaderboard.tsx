@@ -1,7 +1,7 @@
 import { Card } from '../ui/Card';
 import { Trophy, Medal } from 'lucide-react';
 import { storage } from '../../lib/storage';
-import type { GameScore } from '../../types';
+import type { GameScore as _GameScore } from '../../types';
 
 interface LeaderboardProps {
   gameType: '8queens' | 'sudoku';

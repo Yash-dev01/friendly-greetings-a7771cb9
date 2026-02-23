@@ -79,7 +79,7 @@ export function MentorshipChat({ chat, onBack }: MentorshipChatProps) {
         ) : (
           currentChat.messages.map((msg) => {
             const isOwn = msg.senderId === user?.id;
-            const sender = storage.getUserById(msg.senderId);
+            void storage.getUserById(msg.senderId);
             return (
               <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-xs px-4 py-2 rounded-lg ${isOwn ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'}`}>

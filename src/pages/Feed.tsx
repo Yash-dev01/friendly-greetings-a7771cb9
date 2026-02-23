@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Heart, MessageCircle, Share2, ThumbsUp, Briefcase, Calendar, Mail, Search } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Briefcase, Calendar, Mail, Search } from 'lucide-react';
 import { storage } from '../lib/storage';
 import { motion } from 'framer-motion';
 
@@ -15,7 +15,7 @@ type FeedItem = {
   location?: string;
   company?: string;
   salaryRange?: string;
-  createdAt: Date;
+  createdAt: Date | string;
   user?: any;
   likeCount?: number;
   commentCount?: number;
@@ -44,8 +44,8 @@ export function Feed() {
           imageUrl: post.imageUrl,
           createdAt: post.createdAt,
           user: storage.getUserById(post.userId),
-          likeCount: post.likes?.length || 0,
-          commentCount: post.comments?.length || 0
+      likeCount: (post as any).likes?.length || post.likesCount || 0,
+          commentCount: (post as any).comments?.length || 0
         }))
       );
     }
@@ -77,10 +77,10 @@ export function Feed() {
           title: event.title,
           content: event.description,
           location: event.location,
-          imageUrl: event.imageUrl,
+          imageUrl: (event as any).imageUrl,
           createdAt: event.eventDate,
           user: storage.getUserById(event.createdBy),
-          likeCount: event.attendees?.length || 0,
+          likeCount: (event as any).attendees?.length || event.attendeesCount || 0,
           commentCount: 0
         }))
       );
@@ -338,7 +338,7 @@ export function Feed() {
                       fill={likedItems.has(item.id) ? 'currentColor' : 'none'}
                     />
                     <span className="text-sm">
-                      {item.likeCount + (likedItems.has(item.id) ? 1 : 0)}
+                      {(item.likeCount || 0) + (likedItems.has(item.id) ? 1 : 0)}
                     </span>
                   </Button>
                   <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center space-x-2">

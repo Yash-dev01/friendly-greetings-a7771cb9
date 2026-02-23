@@ -66,7 +66,7 @@ export function Posts() {
           : post
       );
       setPosts(updatedPosts);
-      storage.savePosts(updatedPosts);
+      storage.setPosts(updatedPosts);
     } else {
       const newPost = {
         id: Date.now().toString(),
@@ -74,13 +74,12 @@ export function Posts() {
         title: formData.title,
         content: formData.content,
         imageUrl: formData.imageUrl,
-        createdAt: new Date(),
-        likes: [],
-        comments: [],
+        likesCount: 0,
+        createdAt: new Date().toISOString(),
       };
-      const updatedPosts = [newPost, ...posts];
+      const updatedPosts = [newPost, ...posts] as any;
       setPosts(updatedPosts);
-      storage.savePosts(updatedPosts);
+      storage.setPosts(updatedPosts);
     }
 
     handleCloseModal();
@@ -90,7 +89,7 @@ export function Posts() {
     if (window.confirm('Are you sure you want to delete this post?')) {
       const updatedPosts = posts.filter(post => post.id !== id);
       setPosts(updatedPosts);
-      storage.savePosts(updatedPosts);
+      storage.setPosts(updatedPosts);
     }
   };
 
@@ -130,7 +129,7 @@ export function Posts() {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900">{post.title}</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    {new Date(post.createdAt).toLocaleDateString()} • {post.comments?.length || 0} comments • {post.likes?.length || 0} likes
+                    {new Date(post.createdAt).toLocaleDateString()} • {(post as any).comments?.length || 0} comments • {(post as any).likes?.length || post.likesCount || 0} likes
                   </p>
                 </div>
                 <div className="flex gap-2">

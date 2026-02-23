@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from '../../components/ui/Card';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart
+  CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, Users, Briefcase, Calendar, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -86,7 +86,7 @@ export function Analytics() {
     { metric: 'Mentorship Requests', value: userAnalytics.mentors }
   ];
 
-  const monthlyActivityData = [
+  void [
     { month: 'Jan', posts: 0, jobs: 0, events: 0 },
     { month: 'Feb', posts: 0, jobs: 0, events: 0 },
     { month: 'Mar', posts: 0, jobs: 0, events: 0 },
@@ -183,7 +183,7 @@ export function Analytics() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
+// Input removed - unused
 import { storage } from '../lib/storage';
 import { useAuth } from '../context/AuthContext';
 import { Users, Briefcase, Star, Send } from 'lucide-react';

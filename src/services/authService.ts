@@ -30,11 +30,15 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  fullName?: string;
   graduationYear?: number;
   department?: string;
   profileImage?: string;
+  avatarUrl?: string;
   bio?: string;
   role: 'alumni' | 'student' | 'admin';
+  company?: string;
+  position?: string;
 }
 
 export interface AuthResponse {

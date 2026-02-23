@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { eventService } from '../../services/eventService';
 
 export function EventsManagement() {
-  const { user } = useAuth();
+  const { } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export function EventsManagement() {
       setLoading(true);
       setError(null);
       const response = await eventService.getEvents();
-      const eventsArray = Array.isArray(response) ? response : response.data; // handle API object
+      const eventsArray = Array.isArray(response) ? response : (response as any).data; // handle API object
       setEvents(eventsArray || []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch events');
@@ -58,7 +58,7 @@ export function EventsManagement() {
       if (editingEvent) {
         await eventService.updateEvent(editingEvent.id, formData);
       } else {
-        await eventService.createEvent({ ...formData, createdBy: user?.id, currentAttendees: 0, status: 'upcoming', isVirtual: false });
+        await eventService.createEvent(formData);
       }
       setFormData({ title: '', description: '', eventDate: '', location: '' });
       setEditingEvent(null);
@@ -134,7 +134,7 @@ export function EventsManagement() {
           <div className="text-center">
             <Users className="w-12 h-12 text-purple-600 mx-auto mb-2" />
             <p className="text-3xl font-bold text-gray-900">
-              {events.reduce((sum, e) => sum + (e.currentAttendees || 0), 0)}
+              {events.reduce((sum, e) => sum + ((e as any).currentAttendees || e.attendeesCount || 0), 0)}
             </p>
             <p className="text-sm text-gray-600">Total Attendees</p>
           </div>
@@ -174,7 +174,7 @@ export function EventsManagement() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <Users className="w-4 h-4" />
-                          <span>{event.currentAttendees || 0} attendees</span>
+                          <span>{(event as any).currentAttendees || event.attendeesCount || 0} attendees</span>
                         </div>
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export function EventsManagement() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Users className="w-4 h-4" />
-                        <span>{event.currentAttendees || 0} attended</span>
+                        <span>{(event as any).currentAttendees || event.attendeesCount || 0} attended</span>
                       </div>
                     </div>
                   </div>

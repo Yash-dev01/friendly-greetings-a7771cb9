@@ -26,7 +26,7 @@ import { Mentorship } from './pages/Mentorship';
 import { HomeDashboard }   from './pages/HomeDashboard';
 import { Posts } from './pages/Posts';
 
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 // Wrap Home to inject navigation
 function HomeWrapper() {

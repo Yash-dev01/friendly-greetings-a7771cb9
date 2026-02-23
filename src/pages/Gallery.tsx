@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card } from '../components/ui/Card';
-import { Image as ImageIcon, Video, X } from 'lucide-react';
+import { Video, X } from 'lucide-react';
 import { storage } from '../lib/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 

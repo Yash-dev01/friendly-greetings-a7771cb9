@@ -12,7 +12,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerClose,
 } from "../components/ui/drawer";
 
 export function Jobs() {
@@ -27,8 +26,8 @@ export function Jobs() {
     async function fetchJobs() {
       try {
         const res = await jobService.getJobs();
-        const jobList = Array.isArray(res.data) ? res.data : [];
-        setJobs(jobList.filter((j) => j.isActive === true));
+        const jobList = Array.isArray(res) ? res : (res as any).data || [];
+        setJobs(jobList.filter((j: Job) => j.isActive === true));
       } catch (err: any) {
         setError(err.message || "Failed to load jobs");
       } finally {
