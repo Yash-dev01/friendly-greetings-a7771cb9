@@ -36,7 +36,7 @@ connectDB();
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8080",
-  "https://alumnni-connect.netlify.app",
+  "https://alumnni-connect-01.netlify.app",
   "https://friendly-greetings-a7771cb9.onrender.com"
 ];
 
