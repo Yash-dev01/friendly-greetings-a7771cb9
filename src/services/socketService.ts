@@ -49,6 +49,13 @@ class SocketService {
   onReceiveMessage(callback: (data: any) => void): void {
     this.socket?.on('receive_message', callback);
   }
+  offUserTyping() {
+  this.socket?.off('userTyping');
+}
+
+offUserStopTyping() {
+  this.socket?.off('userStopTyping');
+}
 
   offReceiveMessage(): void {
     this.socket?.off('receive_message');

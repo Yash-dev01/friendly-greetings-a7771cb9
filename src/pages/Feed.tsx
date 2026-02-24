@@ -5,13 +5,32 @@ import { Input } from '../components/ui/Input';
 import { Heart, MessageCircle, Share2, Briefcase, Calendar, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { feedService, FeedItem } from '../services/feedService';
+import { useAuth } from '../context/AuthContext';
 
 export function Feed() {
+  const { user } = useAuth();
+
   const [feedType, setFeedType] = useState<'all' | 'posts' | 'jobs' | 'events'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const API_BASE =
+    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
+    'http://localhost:5000';
+
+  const getAvatarSrc = () => {
+    if (!user?.avatarUrl) return null;
+    if (user.avatarUrl.startsWith('http')) return user.avatarUrl;
+    return `${API_BASE}${user.avatarUrl}`;
+  };
+
+  const getItemAvatar = (avatarUrl?: string) => {
+    if (!avatarUrl) return null;
+    if (avatarUrl.startsWith('http')) return avatarUrl;
+    return `${API_BASE}${avatarUrl}`;
+  };
 
   useEffect(() => {
     const loadFeed = async () => {
@@ -35,11 +54,8 @@ export function Feed() {
 
   const toggleLike = (id: string) => {
     const newLiked = new Set(likedItems);
-    if (newLiked.has(id)) {
-      newLiked.delete(id);
-    } else {
-      newLiked.add(id);
-    }
+    if (newLiked.has(id)) newLiked.delete(id);
+    else newLiked.add(id);
     setLikedItems(newLiked);
   };
 
@@ -52,65 +68,95 @@ export function Feed() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      {/* Sidebar */}
       <aside className="lg:col-span-1 order-2 lg:order-1">
         <Card className="sticky top-20">
           <div className="space-y-4">
+
+            {/* Cover */}
             <div>
-              <img
-                src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400"
-                alt="Profile cover"
-                className="w-full h-24 object-cover rounded-lg mb-3"
-              />
+              <div className="h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mb-3" />
+
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto -mt-8 mb-2">
-                  <img
-                    src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400"
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover border-4 border-white"
-                  />
+                  {getAvatarSrc() ? (
+                    <img
+                      src={getAvatarSrc()!}
+                      alt={user?.fullName}
+                      className="w-full h-full rounded-full object-cover border-4 border-white"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-gray-300 border-4 border-white" />
+                  )}
                 </div>
-                <h3 className="font-bold text-gray-900">Complete Your Profile</h3>
-                <p className="text-sm text-gray-600 mt-1">Add a photo and bio to stand out</p>
+
+                <h3 className="font-bold text-gray-900">
+                  {user?.fullName}
+                </h3>
+
+                <p className="text-sm text-gray-600 mt-1">
+                  {user?.position && `${user.position} • `}
+                  {user?.company}
+                </p>
+
+                <p className="text-xs text-gray-500 capitalize mt-1">
+                  {user?.role}
+                </p>
               </div>
             </div>
 
+            {/* Stats (optional static for now) */}
             <div className="space-y-3 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Profile viewers</span>
-                <span className="font-bold text-gray-900">42</span>
+                <span className="font-bold text-gray-900">--</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Post impressions</span>
-                <span className="font-bold text-gray-900">128</span>
+                <span className="font-bold text-gray-900">--</span>
               </div>
             </div>
+
           </div>
         </Card>
       </aside>
 
+      {/* Main Feed */}
       <main className="lg:col-span-2 order-1 lg:order-2 space-y-6">
+
+        {/* Create Post Box */}
         <Card className="sticky top-20 z-10">
           <div className="space-y-4">
+
             <div className="flex items-center space-x-3">
-              <img
-                src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400"
-                alt="Your profile"
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              {getAvatarSrc() ? (
+                <img
+                  src={getAvatarSrc()!}
+                  alt="Your profile"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-300" />
+              )}
+
               <Input placeholder="Start a post..." className="flex-1 rounded-full" />
             </div>
 
+            {/* Filters */}
             <div className="flex gap-2 overflow-x-auto pb-2">
               {filterButtons.map(btn => {
                 const Icon = btn.icon;
                 return (
                   <Button
                     key={btn.id}
+                    size="sm"
+                    variant="outline"
                     onClick={() => setFeedType(btn.id as any)}
                     className={`whitespace-nowrap ${
                       feedType === btn.id
                         ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : ''
                     }`}
                   >
                     {Icon && <Icon className="w-4 h-4 mr-1" />}
@@ -120,8 +166,9 @@ export function Feed() {
               })}
             </div>
 
+            {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Search in feed..."
                 value={searchQuery}
@@ -129,9 +176,11 @@ export function Feed() {
                 className="pl-10"
               />
             </div>
+
           </div>
         </Card>
 
+        {/* Feed Content */}
         {loading ? (
           <Card>
             <div className="text-center py-12">
@@ -141,6 +190,7 @@ export function Feed() {
           </Card>
         ) : (
           <div className="space-y-4">
+
             {filteredItems.map((item, index) => (
               <motion.div
                 key={item._id}
@@ -149,12 +199,15 @@ export function Feed() {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card>
+
+                  {/* Header */}
                   <div className="pb-4 border-b border-gray-200">
                     <div className="flex items-start space-x-3">
-                      {item.user?.avatarUrl ? (
+
+                      {getItemAvatar(item.user?.avatarUrl) ? (
                         <img
-                          src={item.user.avatarUrl}
-                          alt={item.user.fullName}
+                          src={getItemAvatar(item.user?.avatarUrl)!}
+                          alt={item.user?.fullName}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
@@ -163,91 +216,71 @@ export function Feed() {
 
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900">
-                          {item.user?.fullName || 'IdeaBind'}
+                          {item.user?.fullName || 'Admin'}
                         </h4>
+
                         <p className="text-sm text-gray-600">
                           {item.user?.position && `${item.user.position} • `}
-                          <span>{item.user?.company || 'IdeaBind Admin'}</span>
+                          {item.user?.company}
                         </p>
+
                         <p className="text-xs text-gray-500 mt-1">
                           {new Date(item.createdAt).toLocaleDateString()}
                         </p>
                       </div>
 
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        item.type === 'post' ? 'bg-blue-100 text-blue-700' :
-                        item.type === 'job' ? 'bg-green-100 text-green-700' :
-                        item.type === 'event' ? 'bg-purple-100 text-purple-700' :
-                        'bg-orange-100 text-orange-700'
-                      }`}>
-                        {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                        {item.type}
                       </span>
+
                     </div>
                   </div>
 
+                  {/* Body */}
                   <div className="py-4">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-
-                    {item.type === 'job' && (
-                      <div className="flex flex-wrap gap-3 mb-3 text-sm text-gray-600">
-                        <span>{item.company}</span>
-                        <span>•</span>
-                        <span>{item.location}</span>
-                        {item.salaryRange && (
-                          <>
-                            <span>•</span>
-                            <span className="text-green-600">{item.salaryRange}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    {item.type === 'event' && item.location && (
-                      <div className="flex items-center space-x-2 mb-3 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{item.location}</span>
-                      </div>
-                    )}
-
-                    <p className="text-gray-700 line-clamp-3">{item.content}</p>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-700 line-clamp-3">
+                      {item.content}
+                    </p>
                   </div>
 
+                  {/* Image */}
                   {item.imageUrl && (
                     <div className="my-4 rounded-lg overflow-hidden bg-gray-100 h-48">
                       <img
-                        src={item.imageUrl}
+                        src={item.imageUrl.startsWith('http')
+                          ? item.imageUrl
+                          : `${API_BASE}${item.imageUrl}`}
                         alt={item.title}
                         className="w-full h-full object-cover"
-                        onError={() => {}}
                       />
                     </div>
                   )}
 
+                  {/* Actions */}
                   <div className="pt-4 border-t border-gray-200 flex justify-around text-gray-600">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => toggleLike(item._id)}
-                      className={`flex-1 flex items-center justify-center space-x-2 ${
-                        likedItems.has(item._id) ? 'text-blue-600' : ''
-                      }`}
+                      className="flex-1 flex items-center justify-center space-x-2"
                     >
-                      <Heart
-                        className="w-4 h-4"
-                        fill={likedItems.has(item._id) ? 'currentColor' : 'none'}
-                      />
-                      <span className="text-sm">
-                        {(item.likeCount || 0) + (likedItems.has(item._id) ? 1 : 0)}
-                      </span>
+                      <Heart className="w-4 h-4" />
+                      <span className="text-sm">{item.likeCount || 0}</span>
                     </Button>
+
                     <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center space-x-2">
                       <MessageCircle className="w-4 h-4" />
                       <span className="text-sm">{item.commentCount || 0}</span>
                     </Button>
+
                     <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center space-x-2">
                       <Share2 className="w-4 h-4" />
                     </Button>
                   </div>
+
                 </Card>
               </motion.div>
             ))}
@@ -256,10 +289,10 @@ export function Feed() {
               <Card>
                 <div className="text-center py-12">
                   <p className="text-gray-500 text-lg">No content to show</p>
-                  <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search</p>
                 </div>
               </Card>
             )}
+
           </div>
         )}
       </main>

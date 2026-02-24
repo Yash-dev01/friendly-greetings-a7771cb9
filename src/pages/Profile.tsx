@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
 
 export function Profile() {
-  const { user } = useAuth();
+ const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
@@ -55,23 +55,28 @@ export function Profile() {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await profileService.updateProfile(profile);
-      // Update localStorage user
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        localStorage.setItem('user', JSON.stringify({ ...parsed, ...profile }));
-      }
-      alert('Profile updated successfully!');
-    } catch (err: any) {
-      alert(err.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
-  };
+const handleSave = async () => {
+  setSaving(true);
+
+  try {
+    const updatedProfile = await profileService.updateProfile(profile);
+
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,               // keep id, role, etc
+      ...updatedProfile      // overwrite profile fields
+    };
+
+    updateUser(updatedUser); // ✅ now types match
+
+    alert('Profile updated successfully!');
+  } catch (err: any) {
+    alert(err.message || 'Failed to update profile');
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

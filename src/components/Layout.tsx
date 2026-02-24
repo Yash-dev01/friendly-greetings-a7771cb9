@@ -31,6 +31,21 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const API_BASE =
+    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
+    'http://localhost:5000';
+
+  // ✅ Proper avatar resolver
+  const getAvatarSrc = () => {
+    if (!user?.avatarUrl) return null;
+
+    if (user.avatarUrl.startsWith('http')) {
+      return user.avatarUrl;
+    }
+
+    return `${API_BASE}${user.avatarUrl}`;
+  };
+
   const getNavigationItems = () => {
     if (user?.role === 'admin') {
       return [
@@ -39,10 +54,10 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         { id: 'users', label: 'Users', icon: Users },
         { id: 'events', label: 'Events', icon: Calendar },
         { id: 'analytics', label: 'Analytics', icon: Briefcase },
-        { id: 'admingallery', label: 'Gallery', icon: Image},
-        { id: 'adminjob', label: 'Jobs', icon: Briefcase},
-        { id: 'adminnews', label: 'News', icon: Mail},
-        { id: 'adminpost', label: 'Post', icon: FileText},
+        { id: 'admingallery', label: 'Gallery', icon: Image },
+        { id: 'adminjob', label: 'Jobs', icon: Briefcase },
+        { id: 'adminnews', label: 'News', icon: Mail },
+        { id: 'adminpost', label: 'Post', icon: FileText },
       ];
     }
 
@@ -77,9 +92,11 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* HEADER */}
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+            
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -88,21 +105,32 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                 {isSidebarOpen ? <X /> : <Menu />}
               </button>
               <GraduationCap className="w-8 h-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900">IdeaBind</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                Alumni Connect
+              </h1>
             </div>
 
             <div className="flex items-center space-x-4">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.fullName}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {user?.role}
+                </p>
               </div>
-              {user?.avatarUrl && (
+
+              {/* ✅ FIXED AVATAR */}
+              {getAvatarSrc() ? (
                 <img
-                  src={user.avatarUrl}
-                  alt={user.fullName}
+                  src={getAvatarSrc()!}
+                  alt={user?.fullName}
                   className="w-10 h-10 rounded-full object-cover"
                 />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-300" />
               )}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -113,11 +141,14 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                 <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
+
           </div>
         </div>
       </header>
 
+      {/* BODY */}
       <div className="flex">
+
         <AnimatePresence>
           {(isSidebarOpen || window.innerWidth >= 1024) && (
             <motion.aside
@@ -130,6 +161,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = currentPage === item.id;
+
                   return (
                     <button
                       key={item.id}
@@ -158,6 +190,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
             {children}
           </div>
         </main>
+
       </div>
 
       {isSidebarOpen && (

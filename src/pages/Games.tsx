@@ -90,10 +90,10 @@ export function Games() {
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Leaderboard gameType="8queens" title="8 Queens Champions" />
         <Leaderboard gameType="sudoku" title="Sudoku Speed Masters" />
-      </div>
+      </div> */}
     </div>
   );
 }

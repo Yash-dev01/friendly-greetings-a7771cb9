@@ -37,6 +37,19 @@ export function Mentorship() {
       socketService.disconnect();
     };
   }, [user]);
+  const API_BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
+  'http://localhost:5000';
+
+const getAvatarSrc = (avatarUrl?: string) => {
+  if (!avatarUrl) return null;
+
+  if (avatarUrl.startsWith('http')) {
+    return avatarUrl;
+  }
+
+  return `${API_BASE}${avatarUrl}`;
+};
 
   const fetchData = async () => {
     try {
@@ -191,9 +204,15 @@ export function Mentorship() {
               return (
                 <div key={request._id} className="p-4 bg-gray-50 rounded-lg flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
-                    {otherPerson?.avatarUrl && (
-                      <img src={otherPerson.avatarUrl} alt={otherPerson.fullName} className="w-12 h-12 rounded-full object-cover" />
-                    )}
+                   {getAvatarSrc(otherPerson?.avatarUrl) ? (
+  <img
+    src={getAvatarSrc(otherPerson?.avatarUrl)!}
+    alt={otherPerson.fullName}
+    className="w-12 h-12 rounded-full object-cover"
+  />
+) : (
+  <div className="w-12 h-12 rounded-full bg-gray-300" />
+)}
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <p className="font-semibold text-gray-900">{otherPerson?.fullName}</p>
