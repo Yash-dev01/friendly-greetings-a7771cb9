@@ -15,7 +15,8 @@ import {
   Users,
   Mail,
   FileText,
-  Rss
+  Rss,
+  UserCircle
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,10 +51,12 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         { id: 'feed', label: 'Home', icon: Rss },
         { id: 'dashboard', label: 'Dashboard', icon: Home },
         { id: 'jobs', label: 'Jobs', icon: Briefcase },
+        { id: 'mentorship', label: 'Mentorship', icon: Users },
         { id: 'newsletters', label: 'Newsletters', icon: Newspaper },
         { id: 'gallery', label: 'Gallery', icon: Image },
         { id: 'archives', label: 'Archives', icon: Archive },
-        { id: 'games', label: 'Games', icon: Gamepad2 }
+        { id: 'games', label: 'Games', icon: Gamepad2 },
+        { id: 'profile', label: 'Profile', icon: UserCircle },
       ];
     }
 
@@ -64,7 +67,9 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
       { id: 'mentorship', label: 'Mentorship', icon: Users },
       { id: 'newsletters', label: 'Newsletters', icon: Newspaper },
       { id: 'gallery', label: 'Gallery', icon: Image },
-      { id: 'games', label: 'Games', icon: Gamepad2 }
+      { id: 'archives', label: 'Archives', icon: Archive },
+      { id: 'games', label: 'Games', icon: Gamepad2 },
+      { id: 'profile', label: 'Profile', icon: UserCircle },
     ];
   };
 

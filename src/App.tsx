@@ -25,7 +25,7 @@ import { Archives } from './pages/Archives';
 import { Mentorship } from './pages/Mentorship';
 import { HomeDashboard }   from './pages/HomeDashboard';
 import { Posts } from './pages/Posts';
-
+import { Profile } from './pages/Profile';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 // Wrap Home to inject navigation
@@ -116,6 +116,10 @@ function AppContent() {
           return <Games />;
         case 'posts':
           return <Posts />;
+        case 'mentorship':
+          return <Mentorship />;
+        case 'profile':
+          return <Profile />;
         default:
           return <AlumniDashboard />;
       }
@@ -139,6 +143,10 @@ function AppContent() {
         return <Games />;
       case 'posts':
         return <Posts />;
+      case 'archives':
+        return <Archives />;
+      case 'profile':
+        return <Profile />;
       default:
         return <StudentDashboard />;
     }

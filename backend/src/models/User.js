@@ -27,40 +27,29 @@ const userSchema = new mongoose.Schema(
       enum: ['admin', 'alumni', 'student'],
       default: 'student',
     },
-    graduationYear: {
-      type: Number,
-      min: 1900,
-      max: 2100,
-    },
-    department: {
-      type: String,
-      trim: true,
-    },
-    company: {
-      type: String,
-      trim: true,
-    },
-    position: {
-      type: String,
-      trim: true,
-    },
-    avatarUrl: {
-      type: String,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+    graduationYear: { type: Number, min: 1900, max: 2100 },
+    department: { type: String, trim: true },
+    company: { type: String, trim: true },
+    position: { type: String, trim: true },
+    avatarUrl: { type: String },
+    isActive: { type: Boolean, default: true },
+
+    // Extended profile fields
+    phone: { type: String, trim: true },
+    industry: { type: String, trim: true },
+    experience: { type: Number, min: 0 },
+    skills: [{ type: String, trim: true }],
+    linkedinUrl: { type: String, trim: true },
+    portfolioUrl: { type: String, trim: true },
+    location: { type: String, trim: true },
+    bio: { type: String, maxlength: 2000 },
+    resumeUrl: { type: String },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
+  if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
