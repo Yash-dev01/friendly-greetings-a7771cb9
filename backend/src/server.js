@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
-
+import profileRoutes from './routes/profileRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
@@ -49,12 +49,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // 📌 Rate limiter 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.',
-});
-app.use('/api/', limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   message: 'Too many requests from this IP, please try again later.',
+// });
+// app.use('/api/', limiter);
 
 // 💚 Health check
 app.get('/api/health', (req, res) => {
@@ -66,6 +66,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // 🔥 ROUTES
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
@@ -79,6 +80,12 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/archives', archiveRoutes);
+
+
+app.use('/api/profile', profileRoutes);
+
+
+app.use('/uploads', express.static('uploads'));
 
 // ❗404 Handler
 app.use((req, res) => {
