@@ -27,8 +27,22 @@ export const getGalleryItemById = async (req, res) => {
 
 export const createGalleryItem = async (req, res) => {
   try {
+    let mediaUrl = req.body.mediaUrl;
+
+    // If file was uploaded via multer
+    if (req.file) {
+      mediaUrl = `/uploads/gallery/${req.file.filename}`;
+    }
+
+    if (!mediaUrl) {
+      return res.status(400).json({ message: 'Media URL or file is required' });
+    }
+
     const item = await GalleryItem.create({
-      ...req.body,
+      title: req.body.title,
+      description: req.body.description,
+      mediaUrl,
+      mediaType: req.body.mediaType || 'photo',
       uploadedBy: req.user._id,
     });
 

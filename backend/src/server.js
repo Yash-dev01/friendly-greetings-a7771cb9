@@ -19,6 +19,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import feedRoutes from './routes/feedRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
+import archiveRoutes from './routes/archiveRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -43,6 +44,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
 
 // 📌 Rate limiter 
 const limiter = rateLimit({
@@ -74,6 +78,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/newsletters', newsletterRoutes);
+app.use('/api/archives', archiveRoutes);
 
 // ❗404 Handler
 app.use((req, res) => {

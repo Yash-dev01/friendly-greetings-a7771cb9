@@ -9,6 +9,7 @@ import {
 } from '../controllers/galleryController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validation.js';
+import { upload } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -19,10 +20,9 @@ router.post(
   '/',
   protect,
   authorize('admin'),
+  upload.single('media'),
   [
     body('title').notEmpty().withMessage('Title is required'),
-    body('mediaUrl').notEmpty().withMessage('Media URL is required'),
-    body('mediaType').isIn(['photo', 'video']).withMessage('Media type must be photo or video'),
     validate,
   ],
   createGalleryItem
