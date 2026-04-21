@@ -76,6 +76,41 @@ offUserStopTyping() {
   onUserStopTyping(callback: (data: any) => void): void {
     this.socket?.on('user_stop_typing', callback);
   }
+
+  // ============= TEAM ROOMS =============
+  joinTeam(teamId: string): void {
+    this.socket?.emit('team:join', teamId);
+  }
+  leaveTeam(teamId: string): void {
+    this.socket?.emit('team:leave', teamId);
+  }
+  sendTeamMessage(data: { teamId: string; message: any }): void {
+    this.socket?.emit('team:message', data);
+  }
+  onTeamMessage(cb: (data: any) => void): void {
+    this.socket?.on('team:message', cb);
+  }
+  offTeamMessage(): void {
+    this.socket?.off('team:message');
+  }
+  emitWhiteboardStroke(data: { teamId: string; stroke: any }): void {
+    this.socket?.emit('team:whiteboard:stroke', data);
+  }
+  onWhiteboardStroke(cb: (data: any) => void): void {
+    this.socket?.on('team:whiteboard:stroke', cb);
+  }
+  offWhiteboardStroke(): void {
+    this.socket?.off('team:whiteboard:stroke');
+  }
+  emitWhiteboardClear(data: { teamId: string }): void {
+    this.socket?.emit('team:whiteboard:clear', data);
+  }
+  onWhiteboardClear(cb: (data: any) => void): void {
+    this.socket?.on('team:whiteboard:clear', cb);
+  }
+  offWhiteboardClear(): void {
+    this.socket?.off('team:whiteboard:clear');
+  }
 }
 
 export const socketService = new SocketService();

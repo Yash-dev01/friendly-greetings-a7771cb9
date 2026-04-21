@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
-import { ArrowLeft, Send, MoreVertical, Phone, Video } from 'lucide-react';
+import { ArrowLeft, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { conversationService, Conversation } from '../services/conversationService';
 import { socketService } from '../services/socketService';

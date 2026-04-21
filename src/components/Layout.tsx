@@ -16,7 +16,9 @@ import {
   Mail,
   FileText,
   Rss,
-  UserCircle
+  UserCircle,
+  UserPlus,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -58,6 +60,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         { id: 'adminjob', label: 'Jobs', icon: Briefcase },
         { id: 'adminnews', label: 'News', icon: Mail },
         { id: 'adminpost', label: 'Post', icon: FileText },
+        { id: 'teamrequests', label: 'Team Requests', icon: ShieldCheck },
       ];
     }
 
@@ -71,6 +74,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         { id: 'gallery', label: 'Gallery', icon: Image },
         { id: 'archives', label: 'Archives', icon: Archive },
         { id: 'games', label: 'Games', icon: Gamepad2 },
+        { id: 'teams', label: 'Team Creation', icon: UserPlus },
         { id: 'profile', label: 'Profile', icon: UserCircle },
       ];
     }
@@ -84,6 +88,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
       { id: 'gallery', label: 'Gallery', icon: Image },
       { id: 'archives', label: 'Archives', icon: Archive },
       { id: 'games', label: 'Games', icon: Gamepad2 },
+      { id: 'teams', label: 'My Teams', icon: UserPlus },
       { id: 'profile', label: 'Profile', icon: UserCircle },
     ];
   };
