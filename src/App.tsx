@@ -26,6 +26,9 @@ import { Mentorship } from './pages/Mentorship';
 import { HomeDashboard }   from './pages/HomeDashboard';
 import { Posts } from './pages/Posts';
 import { Profile } from './pages/Profile';
+import { TeamCreation } from './pages/TeamCreation';
+import { TeamWorkspace } from './pages/TeamWorkspace';
+import { TeamRequests } from './pages/admin/TeamRequests';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 // Wrap Home to inject navigation
@@ -38,6 +41,12 @@ function AppContent() {
   const { user, isLoading } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [showLogin, setShowLogin] = useState(false);
+  const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
+
+  const openWorkspace = (teamId: string) => {
+    setActiveTeamId(teamId);
+    setCurrentPage('teamworkspace');
+  };
 
   if (isLoading) {
     return (
@@ -93,6 +102,10 @@ function AppContent() {
           return <NewsLetterManagement />;
         case 'adminpost':
           return <PostManagement />;
+        case 'teamrequests':
+          return <TeamRequests />;
+        case 'teamworkspace':
+          return activeTeamId ? <TeamWorkspace teamId={activeTeamId} onBack={() => setCurrentPage('teamrequests')} /> : <TeamRequests />;
         default:
           return <AdminDashboard />;
       }
@@ -120,6 +133,10 @@ function AppContent() {
           return <Mentorship />;
         case 'profile':
           return <Profile />;
+        case 'teams':
+          return <TeamCreation onOpenWorkspace={openWorkspace} />;
+        case 'teamworkspace':
+          return activeTeamId ? <TeamWorkspace teamId={activeTeamId} onBack={() => setCurrentPage('teams')} /> : <TeamCreation onOpenWorkspace={openWorkspace} />;
         default:
           return <AlumniDashboard />;
       }
@@ -147,6 +164,10 @@ function AppContent() {
         return <Archives />;
       case 'profile':
         return <Profile />;
+      case 'teams':
+        return <TeamCreation onOpenWorkspace={openWorkspace} />;
+      case 'teamworkspace':
+        return activeTeamId ? <TeamWorkspace teamId={activeTeamId} onBack={() => setCurrentPage('teams')} /> : <StudentDashboard />;
       default:
         return <StudentDashboard />;
     }
