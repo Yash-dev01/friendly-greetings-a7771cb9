@@ -20,6 +20,7 @@ import feedRoutes from './routes/feedRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
 import archiveRoutes from './routes/archiveRoutes.js';
+import teamRoutes from './routes/teamRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -82,6 +83,7 @@ app.use('/api/feed', feedRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/archives', archiveRoutes);
+app.use('/api/teams', teamRoutes);
 
 
 app.use('/api/profile', profileRoutes);
@@ -144,6 +146,35 @@ io.on('connection', (socket) => {
 
   socket.on('stop_typing', (data) => {
     socket.to(data.conversationId).emit('user_stop_typing', data);
+  });
+
+  // ============= TEAM ROOMS =============
+  socket.on('team:join', (teamId) => {
+    socket.join(`team:${teamId}`);
+  });
+
+  socket.on('team:leave', (teamId) => {
+    socket.leave(`team:${teamId}`);
+  });
+
+  // Team chat broadcast
+  socket.on('team:message', (data) => {
+    // data: { teamId, message }
+    socket.to(`team:${data.teamId}`).emit('team:message', data);
+  });
+
+  // Whiteboard real-time stroke broadcast
+  socket.on('team:whiteboard:stroke', (data) => {
+    // data: { teamId, stroke }
+    socket.to(`team:${data.teamId}`).emit('team:whiteboard:stroke', data);
+  });
+
+  socket.on('team:whiteboard:clear', (data) => {
+    socket.to(`team:${data.teamId}`).emit('team:whiteboard:clear', data);
+  });
+
+  socket.on('team:typing', (data) => {
+    socket.to(`team:${data.teamId}`).emit('team:typing', data);
   });
 
   socket.on('disconnect', () => {
