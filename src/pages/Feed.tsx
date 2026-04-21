@@ -1,34 +1,43 @@
-import { useEffect, useState } from 'react';
-import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Heart, MessageCircle, Share2, Briefcase, Calendar, Search } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { feedService, FeedItem } from '../services/feedService';
-import { useAuth } from '../context/AuthContext';
+import { useEffect, useState } from "react";
+import { Card } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Briefcase,
+  Calendar,
+  Search,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { feedService, FeedItem } from "../services/feedService";
+import { useAuth } from "../context/AuthContext";
 
 export function Feed() {
   const { user } = useAuth();
 
-  const [feedType, setFeedType] = useState<'all' | 'posts' | 'jobs' | 'events'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [feedType, setFeedType] = useState<"all" | "posts" | "jobs" | "events">(
+    "all",
+  );
+  const [searchQuery, setSearchQuery] = useState("");
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const API_BASE =
-    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
-    'http://localhost:5000';
+    import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ||
+    "http://localhost:5000";
 
   const getAvatarSrc = () => {
     if (!user?.avatarUrl) return null;
-    if (user.avatarUrl.startsWith('http')) return user.avatarUrl;
+    if (user.avatarUrl.startsWith("http")) return user.avatarUrl;
     return `${API_BASE}${user.avatarUrl}`;
   };
 
   const getItemAvatar = (avatarUrl?: string) => {
     if (!avatarUrl) return null;
-    if (avatarUrl.startsWith('http')) return avatarUrl;
+    if (avatarUrl.startsWith("http")) return avatarUrl;
     return `${API_BASE}${avatarUrl}`;
   };
 
@@ -39,7 +48,7 @@ export function Feed() {
         const data = await feedService.getFeed(feedType);
         setFeedItems(data);
       } catch (err) {
-        console.error('Failed to load feed', err);
+        console.error("Failed to load feed", err);
       } finally {
         setLoading(false);
       }
@@ -47,9 +56,10 @@ export function Feed() {
     loadFeed();
   }, [feedType]);
 
-  const filteredItems = feedItems.filter(item =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = feedItems.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.content.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const toggleLike = (id: string) => {
@@ -60,20 +70,18 @@ export function Feed() {
   };
 
   const filterButtons = [
-    { id: 'all', label: 'All', icon: null },
-    { id: 'posts', label: 'Posts', icon: null },
-    { id: 'jobs', label: 'Jobs', icon: Briefcase },
-    { id: 'events', label: 'Events', icon: Calendar },
+    { id: "all", label: "All", icon: null },
+    { id: "posts", label: "Posts", icon: null },
+    { id: "jobs", label: "Jobs", icon: Briefcase },
+    { id: "events", label: "Events", icon: Calendar },
   ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
       {/* Sidebar */}
       <aside className="lg:col-span-1 order-2 lg:order-1">
         <Card className="sticky top-20">
           <div className="space-y-4">
-
             {/* Cover */}
             <div>
               <div className="h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mb-3" />
@@ -91,9 +99,7 @@ export function Feed() {
                   )}
                 </div>
 
-                <h3 className="font-bold text-gray-900">
-                  {user?.fullName}
-                </h3>
+                <h3 className="font-bold text-gray-900">{user?.fullName}</h3>
 
                 <p className="text-sm text-gray-600 mt-1">
                   {user?.position && `${user.position} • `}
@@ -117,18 +123,15 @@ export function Feed() {
                 <span className="font-bold text-gray-900">--</span>
               </div>
             </div>
-
           </div>
         </Card>
       </aside>
 
       {/* Main Feed */}
       <main className="lg:col-span-2 order-1 lg:order-2 space-y-6">
-
         {/* Create Post Box */}
         <Card className="sticky top-20 z-10">
           <div className="space-y-4">
-
             <div className="flex items-center space-x-3">
               {getAvatarSrc() ? (
                 <img
@@ -139,13 +142,13 @@ export function Feed() {
               ) : (
                 <div className="w-10 h-10 rounded-full bg-gray-300" />
               )}
-
-              <Input placeholder="Start a post..." className="flex-1 rounded-full" />
+              {/* 
+              <Input placeholder="Start a post..." className="flex-1 rounded-full" /> */}
             </div>
 
             {/* Filters */}
             <div className="flex gap-2 overflow-x-auto pb-2">
-              {filterButtons.map(btn => {
+              {filterButtons.map((btn) => {
                 const Icon = btn.icon;
                 return (
                   <Button
@@ -154,9 +157,7 @@ export function Feed() {
                     variant="outline"
                     onClick={() => setFeedType(btn.id as any)}
                     className={`whitespace-nowrap ${
-                      feedType === btn.id
-                        ? 'bg-blue-100 text-blue-700'
-                        : ''
+                      feedType === btn.id ? "bg-blue-100 text-blue-700" : ""
                     }`}
                   >
                     {Icon && <Icon className="w-4 h-4 mr-1" />}
@@ -176,7 +177,6 @@ export function Feed() {
                 className="pl-10"
               />
             </div>
-
           </div>
         </Card>
 
@@ -190,7 +190,6 @@ export function Feed() {
           </Card>
         ) : (
           <div className="space-y-4">
-
             {filteredItems.map((item, index) => (
               <motion.div
                 key={item._id}
@@ -199,11 +198,9 @@ export function Feed() {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card>
-
                   {/* Header */}
                   <div className="pb-4 border-b border-gray-200">
                     <div className="flex items-start space-x-3">
-
                       {getItemAvatar(item.user?.avatarUrl) ? (
                         <img
                           src={getItemAvatar(item.user?.avatarUrl)!}
@@ -216,7 +213,7 @@ export function Feed() {
 
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-900">
-                          {item.user?.fullName || 'Admin'}
+                          {item.user?.fullName || "Admin"}
                         </h4>
 
                         <p className="text-sm text-gray-600">
@@ -232,7 +229,6 @@ export function Feed() {
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                         {item.type}
                       </span>
-
                     </div>
                   </div>
 
@@ -241,18 +237,18 @@ export function Feed() {
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
                       {item.title}
                     </h3>
-                    <p className="text-gray-700 line-clamp-3">
-                      {item.content}
-                    </p>
+                    <p className="text-gray-700 line-clamp-3">{item.content}</p>
                   </div>
 
                   {/* Image */}
                   {item.imageUrl && (
                     <div className="my-4 rounded-lg overflow-hidden bg-gray-100 h-48">
                       <img
-                        src={item.imageUrl.startsWith('http')
-                          ? item.imageUrl
-                          : `${API_BASE}${item.imageUrl}`}
+                        src={
+                          item.imageUrl.startsWith("http")
+                            ? item.imageUrl
+                            : `${API_BASE}${item.imageUrl}`
+                        }
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
@@ -271,16 +267,23 @@ export function Feed() {
                       <span className="text-sm">{item.likeCount || 0}</span>
                     </Button>
 
-                    <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 flex items-center justify-center space-x-2"
+                    >
                       <MessageCircle className="w-4 h-4" />
                       <span className="text-sm">{item.commentCount || 0}</span>
                     </Button>
 
-                    <Button size="sm" variant="outline" className="flex-1 flex items-center justify-center space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 flex items-center justify-center space-x-2"
+                    >
                       <Share2 className="w-4 h-4" />
                     </Button>
                   </div>
-
                 </Card>
               </motion.div>
             ))}
@@ -292,7 +295,6 @@ export function Feed() {
                 </div>
               </Card>
             )}
-
           </div>
         )}
       </main>

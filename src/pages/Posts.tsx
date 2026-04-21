@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { MessageSquare, Plus, Edit2, Trash2 } from 'lucide-react';
+import { MessageSquare, Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
 import { postService, Post } from '../services/postService';
 import { motion } from 'framer-motion';
 
 interface PostForm {
   title: string;
   content: string;
-  imageUrl?: string;
 }
 
 export function Posts() {
@@ -19,7 +18,24 @@ export function Posts() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [formData, setFormData] = useState<PostForm>({ title: '', content: '', imageUrl: '' });
+  const [formData, setFormData] = useState<PostForm>({
+    title: '',
+    content: '',
+  });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const API_BASE =
+    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
+    'http://localhost:5000';
+
+  const getImageUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${API_BASE}${url}`;
+  };
 
   const fetchPosts = async () => {
     try {
@@ -32,34 +48,55 @@ export function Posts() {
     }
   };
 
-  useEffect(() => { fetchPosts(); }, []);
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleOpenModal = (post?: Post) => {
     if (post) {
-      setFormData({ title: post.title, content: post.content, imageUrl: post.imageUrl });
+      setFormData({ title: post.title, content: post.content });
+      setPreview(post.imageUrl ? getImageUrl(post.imageUrl) : null);
       setEditingId(post._id);
     } else {
-      setFormData({ title: '', content: '', imageUrl: '' });
+      setFormData({ title: '', content: '' });
+      setPreview(null);
       setEditingId(null);
     }
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => { setIsModalOpen(false); setEditingId(null); };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setPreview(null);
+    setImageFile(null);
+  };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.content) { alert('Please fill in title and content'); return; }
+    if (!formData.title || !formData.content) {
+      alert('Please fill title and content');
+      return;
+    }
+
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('content', formData.content);
+      if (imageFile) formDataToSend.append('image', imageFile);
+
       if (editingId) {
-        await postService.update(editingId, formData);
+        await postService.update(editingId, formDataToSend);
       } else {
-        await postService.create(formData);
+        await postService.create(formDataToSend);
       }
+
       handleCloseModal();
       fetchPosts();
     } catch (err: any) {
@@ -68,19 +105,23 @@ export function Posts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this post?')) return;
-    try {
-      await postService.delete(id);
-      fetchPosts();
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete post');
-    }
+    if (!window.confirm('Delete this post?')) return;
+    await postService.delete(id);
+    fetchPosts();
   };
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Loading posts...</div>;
+  const handleFileSelect = (file: File) => {
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  if (loading)
+    return <div className="text-center py-10 text-gray-500">Loading posts...</div>;
 
   return (
     <div className="space-y-6">
+
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Posts</h1>
@@ -93,67 +134,118 @@ export function Posts() {
       </div>
 
       <Card>
-        <Input placeholder="Search posts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <Input
+          placeholder="Search posts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </Card>
 
+      {/* POSTS GRID */}
       <div className="grid gap-4">
         {filteredPosts.map((post, index) => (
-          <motion.div key={post._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+          <motion.div
+            key={post._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
             <Card>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900">{post.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {new Date(post.createdAt).toLocaleDateString()} • {post.comments?.length || 0} comments • {post.likesCount || 0} likes
+              <div className="flex justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold">{post.title}</h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(post.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => handleOpenModal(post)} className="bg-blue-600 text-white hover:bg-blue-700">
+                  <Button size="sm" onClick={() => handleOpenModal(post)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" onClick={() => handleDelete(post._id)} className="bg-red-600 text-white hover:bg-red-700">
+                  <Button size="sm" onClick={() => handleDelete(post._id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
+
               {post.imageUrl && (
-                <div className="mb-4 rounded-lg overflow-hidden h-48 bg-gray-100">
-                  <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
-                </div>
+                <img
+                  src={getImageUrl(post.imageUrl)}
+                  className="rounded-lg mb-4 max-h-60 object-cover w-full"
+                />
               )}
-              <p className="text-gray-700 line-clamp-3">{post.content}</p>
+
+              <p className="text-gray-700">{post.content}</p>
             </Card>
           </motion.div>
         ))}
       </div>
 
-      {filteredPosts.length === 0 && (
-        <Card>
-          <div className="text-center py-12">
-            <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No posts found</p>
-          </div>
-        </Card>
-      )}
+      {/* MODAL */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={editingId ? 'Edit Post' : 'Create Post'}
+      >
+        <div className="space-y-4">
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingId ? 'Edit Post' : 'Create New Post'}>
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Post title" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-            <textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} placeholder="Write your post content here..." className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" rows={6} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-            <Input value={formData.imageUrl || ''} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} placeholder="https://example.com/image.jpg" />
-          </div>
-          <div className="flex gap-3 pt-4">
-            <Button onClick={handleSubmit} className="flex-1">{editingId ? 'Update Post' : 'Create Post'}</Button>
-            <Button onClick={handleCloseModal} variant="outline" className="flex-1">Cancel</Button>
-          </div>
+          <Input
+            placeholder="Title"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData({ ...formData, title: e.target.value })
+            }
+          />
+
+          <textarea
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
+            placeholder="Write content..."
+            className="w-full border px-3 py-2 rounded-lg"
+            rows={5}
+          />
+
+          {/* IMAGE UPLOAD */}
+          {preview ? (
+            <div className="relative">
+              <img src={preview} className="rounded-lg max-h-60" />
+              <button
+                className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-full"
+                onClick={() => {
+                  setPreview(null);
+                  setImageFile(null);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Image
+            </Button>
+          )}
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              if (e.target.files?.[0]) {
+                handleFileSelect(e.target.files[0]);
+              }
+            }}
+          />
+
+          <Button onClick={handleSubmit}>
+            {editingId ? 'Update' : 'Create'}
+          </Button>
         </div>
       </Modal>
     </div>

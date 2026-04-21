@@ -27,12 +27,12 @@ export function Home({ onGetStarted }: HomeProps) {
       description: 'Stay updated with campus events, reunions, and networking opportunities',
       color: 'bg-purple-500'
     },
-    {
-      icon: Bot,
-      title: 'AI Assistant',
-      description: 'Get instant help with our intelligent AI helper for jobs, FAQs, and more',
-      color: 'bg-pink-500'
-    },
+    // {
+    //   icon: Bot,
+    //   title: 'AI Assistant',
+    //   description: 'Get instant help with our intelligent AI helper for jobs, FAQs, and more',
+    //   color: 'bg-pink-500'
+    // },
     {
       icon: Gamepad2,
       title: 'Interactive Games',
@@ -61,7 +61,7 @@ export function Home({ onGetStarted }: HomeProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <GraduationCap className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">IdeaBind</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Alumni Connect</h1>
             </div>
             <Button onClick={onGetStarted}>Get Started</Button>
           </div>
@@ -86,9 +86,9 @@ export function Home({ onGetStarted }: HomeProps) {
               <Button size="lg" onClick={onGetStarted} className="text-lg">
                 Join Now
               </Button>
-              <Button size="lg" variant="outline" className="text-lg">
+              {/* <Button size="lg" variant="outline" className="text-lg">
                 Learn More
-              </Button>
+              </Button> */}
             </div>
           </motion.div>
 
@@ -99,10 +99,10 @@ export function Home({ onGetStarted }: HomeProps) {
             className="mt-16"
           >
             <img
-              src="https://images.pexels.com/photos/1595391/pexels-photo-1595391.jpeg?auto=compress&cs=tinysrgb&w=1200"
-              alt="Alumni networking"
-              className="rounded-2xl shadow-2xl mx-auto"
-            />
+  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQmmzJHKyPQKbRntvuxDpqFahXHnIVssTr8g&s"
+  alt="Alumni networking"
+  className="w-full max-w-4xl h-auto rounded-2xl shadow-2xl mx-auto"
+/>
           </motion.div>
         </section>
 
@@ -231,7 +231,7 @@ export function Home({ onGetStarted }: HomeProps) {
               Ready to Get Started?
             </h3>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Join thousands of alumni and students already connected on IdeaBind
+              Join thousands of alumni and students already connected on Alumni Connect
             </p>
             <Button size="lg" onClick={onGetStarted} className="text-lg">
               Join the Community
@@ -246,13 +246,13 @@ export function Home({ onGetStarted }: HomeProps) {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <GraduationCap className="w-6 h-6" />
-                <span className="text-xl font-bold">IdeaBind</span>
+                <span className="text-xl font-bold">Alumni Connect</span>
               </div>
               <p className="text-gray-400">
                 Connecting alumni, students, and administrators in a unified digital space.
               </p>
             </div>
-            <div>
+            {/* <div>
               <h4 className="font-semibold mb-4">Platform</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>Features</li>
@@ -275,10 +275,10 @@ export function Home({ onGetStarted }: HomeProps) {
                 <li>Terms</li>
                 <li>Cookies</li>
               </ul>
-            </div>
+            </div> */}
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 IdeaBind. All rights reserved.</p>
+            <p>© 2025 Alumni Connect. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -26,10 +26,10 @@ const app = express();
 const httpServer = createServer(app);
 app.set("trust proxy", 1);
 
-// 📌 DB
+
 connectDB();
 
-// 📌 CORS origins
+
 
 
 // 📌 Middlewares
@@ -58,15 +58,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));
 
-// 📌 Rate limiter 
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: 100,
-//   message: 'Too many requests from this IP, please try again later.',
-// });
-// app.use('/api/', limiter);
 
-// 💚 Health check
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,

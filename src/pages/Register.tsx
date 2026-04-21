@@ -87,7 +87,7 @@ export function Register() {
             <Input
               label="First Name"
               name="firstName"
-              placeholder="John"
+              placeholder="Name"
               value={formData.firstName}
               onChange={handleChange}
               required
@@ -95,7 +95,7 @@ export function Register() {
             <Input
               label="Last Name"
               name="lastName"
-              placeholder="Doe"
+              placeholder="Surname"
               value={formData.lastName}
               onChange={handleChange}
             />

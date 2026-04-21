@@ -46,19 +46,42 @@ class PostService {
     return res.data;
   }
 
-  async create(data: { title: string; content: string; imageUrl?: string }): Promise<Post> {
-    const token = authService.getToken();
-    if (!token) throw new Error('Authentication required');
-    const res = await apiService.post<{ success: boolean; data: Post }>('/posts', data, token);
-    return res.data;
-  }
+ async create(
+  data: FormData | { title: string; content: string; imageUrl?: string }
+): Promise<Post> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
 
-  async update(id: string, data: Partial<Post>): Promise<Post> {
-    const token = authService.getToken();
-    if (!token) throw new Error('Authentication required');
-    const res = await apiService.put<{ success: boolean; data: Post }>(`/posts/${id}`, data, token);
-    return res.data;
-  }
+  const isFormData = data instanceof FormData;
+
+  const res = await apiService.post<{ success: boolean; data: Post }>(
+    '/posts',
+    data,
+    token,
+    isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+  );
+
+  return res.data;
+}
+
+async update(
+  id: string,
+  data: FormData | Partial<Post>
+): Promise<Post> {
+  const token = authService.getToken();
+  if (!token) throw new Error('Authentication required');
+
+  const isFormData = data instanceof FormData;
+
+  const res = await apiService.put<{ success: boolean; data: Post }>(
+    `/posts/${id}`,
+    data,
+    token,
+    isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+  );
+
+  return res.data;
+}
 
   async delete(id: string): Promise<void> {
     const token = authService.getToken();
