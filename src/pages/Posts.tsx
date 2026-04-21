@@ -3,7 +3,7 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { MessageSquare, Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, X } from 'lucide-react';
 import { postService, Post } from '../services/postService';
 import { motion } from 'framer-motion';
 

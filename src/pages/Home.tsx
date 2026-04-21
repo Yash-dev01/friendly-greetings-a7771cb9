@@ -1,4 +1,4 @@
-import { GraduationCap, Users, Briefcase, Calendar, Gamepad2, Bot, Award, TrendingUp } from 'lucide-react';
+import { GraduationCap, Users, Briefcase, Calendar, Gamepad2, Award, TrendingUp } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { motion } from 'framer-motion';

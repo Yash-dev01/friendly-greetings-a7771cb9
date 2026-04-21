@@ -4,7 +4,6 @@ import { Button } from '../components/ui/Button';
 import { Trophy, Crown } from 'lucide-react';
 import { EightQueens } from '../components/games/EightQueens';
 import { MiniSudoku } from '../components/games/MiniSudoku';
-import { Leaderboard } from '../components/games/Leaderboard';
 import { motion } from 'framer-motion';
 
 type GameType = 'menu' | '8queens' | 'sudoku';
