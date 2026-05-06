@@ -3,31 +3,41 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
-import { Plus, Users, X, Clock, CheckCircle2, XCircle, ArrowRight, Mail } from 'lucide-react';
+import { Plus, Users, X, Clock, CheckCircle2, XCircle, ArrowRight, Mail, ListTodo, Map, MessageCircle } from 'lucide-react';
 import { teamService, Team } from '../services/teamService';
 import { motion } from 'framer-motion';
+import { TeamWorkspace } from './TeamWorkspace'; // Import the workspace component
 
 const PERMISSION_OPTIONS = [
-  { id: 'manage_events', label: 'Manage Events' },
-  { id: 'event_participation', label: 'Event Participation' },
-  { id: 'moderate_posts', label: 'Moderate Posts' },
-  { id: 'manage_mentorship', label: 'Manage Mentorship' },
-  { id: 'verify_data', label: 'Verify Data' },
-  { id: 'manage_gallery', label: 'Manage Gallery' },
-  { id: 'whiteboard', label: 'Whiteboard' },
+  // { id: 'manage_events', label: 'Manage Events' },
+  // { id: 'event_participation', label: 'Event Participation' },
+  // { id: 'moderate_posts', label: 'Moderate Posts' },
+  // { id: 'manage_mentorship', label: 'Manage Mentorship' },
+  // { id: 'verify_data', label: 'Verify Data' },
+  // { id: 'manage_gallery', label: 'Manage Gallery' },
+  // { id: 'whiteboard', label: 'Whiteboard' },
   { id: 'roadmap', label: 'Roadmap' },
-  { id: 'pipelining', label: 'Pipelining' },
+  { id: 'pipelining', label: 'Task' },
 ];
 
 interface TeamCreationProps {
   onOpenWorkspace?: (teamId: string) => void;
+  onOpenTasks?: (teamId: string) => void;
+  onOpenRoadmap?: (teamId: string) => void;
+  getWhatsAppLink?: (teamId: string) => string;
 }
 
-export function TeamCreation({ onOpenWorkspace }: TeamCreationProps) {
+type TabId = 'chat' | 'whiteboard' | 'tasks' | 'notes' | 'roadmap' | 'activity';
+
+export function TeamCreation({ onOpenWorkspace, onOpenTasks, onOpenRoadmap, getWhatsAppLink }: TeamCreationProps) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // State for workspace navigation
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [initialTab, setInitialTab] = useState<TabId>('chat');
 
   const [name, setName] = useState('');
   const [purpose, setPurpose] = useState('');
@@ -101,6 +111,41 @@ export function TeamCreation({ onOpenWorkspace }: TeamCreationProps) {
     );
   };
 
+  const handleWhatsAppClick = (teamId: string) => {
+    const link = getWhatsAppLink?.(teamId);
+    if (link) {
+      window.open(link, '_blank');
+    } else {
+      // Default WhatsApp link if not provided by API
+      const defaultLink = `https://wa.me/?text=${encodeURIComponent(`Join our team workspace: ${window.location.origin}/workspace/${teamId}`)}`;
+      window.open(defaultLink, '_blank');
+    }
+  };
+
+  // Handle opening workspace with specific tab
+  const handleOpenWorkspace = (teamId: string, tab: TabId = 'chat') => {
+    setSelectedTeamId(teamId);
+    setInitialTab(tab);
+    onOpenWorkspace?.(teamId);
+  };
+
+  // Handle going back from workspace to team list
+  const handleBackToTeams = () => {
+    setSelectedTeamId(null);
+    load(); // Refresh the team list when coming back
+  };
+
+  // If a team is selected, show the workspace
+  if (selectedTeamId) {
+    return (
+      <TeamWorkspace 
+        teamId={selectedTeamId} 
+        onBack={handleBackToTeams}
+        initialTab={initialTab}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -150,17 +195,47 @@ export function TeamCreation({ onOpenWorkspace }: TeamCreationProps) {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-1 mt-3">
+                {/* <div className="flex flex-wrap gap-1 mt-3">
                   {t.permissions.slice(0, 4).map((p) => (
                     <span key={p} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{p.replace(/_/g, ' ')}</span>
                   ))}
                   {t.permissions.length > 4 && <span className="px-2 py-0.5 text-xs text-gray-500">+{t.permissions.length - 4} more</span>}
-                </div>
+                </div> */}
 
-                {t.status === 'approved' && onOpenWorkspace && (
-                  <Button onClick={() => onOpenWorkspace(t._id)} variant="outline" size="sm" className="mt-4 w-full flex items-center justify-center gap-2">
-                    Open Workspace <ArrowRight className="w-4 h-4" />
-                  </Button>
+                {t.status === 'approved' && (
+                  <div className="mt-4 space-y-2">
+                    {/* Three buttons in a row */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {/* Tasks Button - Opens workspace with Tasks tab */}
+                      <Button 
+                        onClick={() => handleOpenWorkspace(t._id, 'tasks')} 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <ListTodo className="w-4 h-4" /> Tasks
+                      </Button>
+
+                      {/* Roadmap Button - Opens workspace with Roadmap tab */}
+                      <Button 
+                        onClick={() => handleOpenWorkspace(t._id, 'roadmap')} 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <Map className="w-4 h-4" /> Roadmap
+                      </Button>
+
+                      {/* WhatsApp Button - Green */}
+                      <Button 
+                        onClick={() => handleWhatsAppClick(t._id)} 
+                        size="sm" 
+                        className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <MessageCircle className="w-4 h-4" /> WhatsApp
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </Card>
             </motion.div>
@@ -186,7 +261,7 @@ export function TeamCreation({ onOpenWorkspace }: TeamCreationProps) {
             <div className="flex gap-2">
               <Input value={emailInput} onChange={(e) => setEmailInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addEmail())}
-                placeholder="student@example.com" />
+                placeholder="student@gmail.com" />
               <Button type="button" onClick={addEmail} variant="outline">Add</Button>
             </div>
             {emails.length > 0 && (

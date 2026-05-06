@@ -234,18 +234,30 @@
 // }
 
 import { useState, useEffect } from 'react';
-import { Search, Edit, Trash2 } from 'lucide-react';
+import { Search, Edit, Trash2, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { motion } from 'framer-motion';
 import { userManagementService, User } from '../../services/userManagementService';
-import { ImportUsersButton } from './ImportUsersButton'; // ⬅️ NEW COMPONENT
+import { ImportUsersButton } from './ImportUsersButton';
 
 export function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    fullName: '',
+    email: '',
+    role: '',
+    department: '',
+    graduationYear: '',
+    company: '',
+    position: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   // ========= Fetch all users =========
   const fetchUsers = async () => {
@@ -254,6 +266,7 @@ export function UsersManagement() {
       const res = await userManagementService.getUsers();
       setUsers(res);
     } catch (err) {
+      console.error('Failed to load users:', err);
       alert('Failed to load users');
     } finally {
       setLoading(false);
@@ -266,9 +279,9 @@ export function UsersManagement() {
 
   // ========= Filtered users =========
   const filteredUsers = users.filter(user =>
-    user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
+    user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.role?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // ========= Role badge color =========
@@ -286,9 +299,63 @@ export function UsersManagement() {
     if (!window.confirm('Delete this user?')) return;
     try {
       await userManagementService.deleteUser(id);
-      fetchUsers();
+      await fetchUsers(); // Refresh the list
     } catch (err) {
+      console.error('Failed to delete user:', err);
       alert('Failed to delete user');
+    }
+  };
+
+  // ========= Open edit modal =========
+  const handleEditClick = (user: User) => {
+    setEditingUser(user);
+    setEditFormData({
+      fullName: user.fullName || '',
+      email: user.email || '',
+      role: user.role || 'student',
+      department: user.department || '',
+      graduationYear: user.graduationYear?.toString() || '',
+      company: user.company || '',
+      position: user.position || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // ========= Handle edit form input changes =========
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ========= Submit edit form =========
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setSubmitting(true);
+    try {
+      // Prepare update data - only include fields that have values
+      const updateData: Partial<User> = {};
+      
+      if (editFormData.fullName) updateData.fullName = editFormData.fullName;
+      if (editFormData.email) updateData.email = editFormData.email;
+      if (editFormData.role) updateData.role = editFormData.role as 'admin' | 'alumni' | 'student';
+      if (editFormData.department) updateData.department = editFormData.department;
+      if (editFormData.graduationYear) {
+        updateData.graduationYear = parseInt(editFormData.graduationYear);
+      }
+      if (editFormData.company) updateData.company = editFormData.company;
+      if (editFormData.position) updateData.position = editFormData.position;
+
+      await userManagementService.updateUser(editingUser._id, updateData);
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+      await fetchUsers(); // Refresh the list
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      alert('Failed to update user');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -301,7 +368,6 @@ export function UsersManagement() {
           <p className="text-gray-600 mt-1">Manage all platform users</p>
         </div>
 
-        {/* ⬅️ NEW IMPORT BUTTON */}
         <ImportUsersButton onSuccess={fetchUsers} />
       </div>
 
@@ -358,8 +424,20 @@ export function UsersManagement() {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm"><Edit className="w-4 h-4" /></Button>
-                    <Button variant="danger" size="sm" onClick={() => handleDelete(user._id)}><Trash2 className="w-4 h-4" /></Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleEditClick(user)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="danger" 
+                      size="sm" 
+                      onClick={() => handleDelete(user._id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -373,6 +451,142 @@ export function UsersManagement() {
               </div>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-900">Edit User</h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <Input
+                  name="fullName"
+                  value={editFormData.fullName}
+                  onChange={handleEditInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <Input
+                  name="email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={handleEditInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role *
+                </label>
+                <select
+                  name="role"
+                  value={editFormData.role}
+                  onChange={handleEditInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="student">Student</option>
+                  <option value="alumni">Alumni</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department
+                </label>
+                <Input
+                  name="department"
+                  value={editFormData.department}
+                  onChange={handleEditInputChange}
+                  placeholder="e.g., Computer Science"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Graduation Year
+                </label>
+                <Input
+                  name="graduationYear"
+                  type="number"
+                  value={editFormData.graduationYear}
+                  onChange={handleEditInputChange}
+                  placeholder="e.g., 2024"
+                  min="1950"
+                  max={new Date().getFullYear() + 10}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company (for Alumni)
+                </label>
+                <Input
+                  name="company"
+                  value={editFormData.company}
+                  onChange={handleEditInputChange}
+                  placeholder="e.g., Google, Microsoft"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Position (for Alumni)
+                </label>
+                <Input
+                  name="position"
+                  value={editFormData.position}
+                  onChange={handleEditInputChange}
+                  placeholder="e.g., Software Engineer"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="flex-1"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
+          </motion.div>
         </div>
       )}
     </div>

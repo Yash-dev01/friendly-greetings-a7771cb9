@@ -3,34 +3,30 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import {
-  ArrowLeft, MessageSquare, ListTodo, StickyNote, Map, Activity,
-  Pencil, Trash2, Send, Plus, Eraser
+  ArrowLeft, ListTodo, Map, Trash2, Send, Plus
 } from 'lucide-react';
-import { teamService, Team, Workspace, WhiteboardStroke } from '../services/teamService';
+import { teamService, Team, Workspace } from '../services/teamService';
 import { socketService } from '../services/socketService';
 import { useAuth } from '../context/AuthContext';
 
 interface Props {
   teamId: string;
   onBack: () => void;
+  initialTab?: TabId;
 }
 
-type TabId = 'chat' | 'whiteboard' | 'tasks' | 'notes' | 'roadmap' | 'activity';
+type TabId = 'tasks' | 'roadmap';
 
 const TABS: { id: TabId; label: string; icon: any }[] = [
-  { id: 'chat', label: 'Team Chat', icon: MessageSquare },
-  { id: 'whiteboard', label: 'Whiteboard', icon: Pencil },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'notes', label: 'Notes', icon: StickyNote },
   { id: 'roadmap', label: 'Roadmap', icon: Map },
-  { id: 'activity', label: 'Activity', icon: Activity },
 ];
 
-export function TeamWorkspace({ teamId, onBack }: Props) {
+export function TeamWorkspace({ teamId, onBack, initialTab }: Props) {
   const { user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [ws, setWs] = useState<Workspace | null>(null);
-  const [tab, setTab] = useState<TabId>('chat');
+  const [tab, setTab] = useState<TabId>(initialTab || 'tasks');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,9 +52,6 @@ export function TeamWorkspace({ teamId, onBack }: Props) {
     return () => {
       mounted = false;
       socketService.leaveTeam(teamId);
-      socketService.offTeamMessage();
-      socketService.offWhiteboardStroke();
-      socketService.offWhiteboardClear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId]);
@@ -100,203 +93,9 @@ export function TeamWorkspace({ teamId, onBack }: Props) {
         })}
       </div>
 
-      {tab === 'chat' && <TeamChat teamId={teamId} ws={ws} setWs={setWs} />}
-      {tab === 'whiteboard' && <TeamWhiteboard teamId={teamId} ws={ws} setWs={setWs} />}
       {tab === 'tasks' && <TeamTasks teamId={teamId} ws={ws} setWs={setWs} />}
-      {tab === 'notes' && <TeamNotes teamId={teamId} ws={ws} setWs={setWs} />}
       {tab === 'roadmap' && <TeamRoadmap teamId={teamId} ws={ws} setWs={setWs} />}
-      {tab === 'activity' && <TeamActivity ws={ws} />}
     </div>
-  );
-}
-
-// ============= CHAT =============
-function TeamChat({ teamId, ws, setWs }: { teamId: string; ws: Workspace; setWs: (w: Workspace) => void }) {
-  const { user } = useAuth();
-  const [text, setText] = useState('');
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    socketService.onTeamMessage((data: any) => {
-      if (data.teamId !== teamId) return;
-      setWs({ ...ws, messages: [...ws.messages, data.message] });
-    });
-    return () => { socketService.offTeamMessage(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId, ws]);
-
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ws.messages.length]);
-
-  const send = async () => {
-    if (!text.trim()) return;
-    const content = text.trim();
-    setText('');
-    try {
-      const msg = await teamService.sendMessage(teamId, content);
-      setWs({ ...ws, messages: [...ws.messages, msg] });
-      socketService.sendTeamMessage({ teamId, message: msg });
-    } catch (e: any) {
-      alert(e.message);
-    }
-  };
-
-  return (
-    <Card>
-      <div className="h-[480px] flex flex-col">
-        <div className="flex-1 overflow-y-auto space-y-3 p-2">
-          {ws.messages.length === 0 && <p className="text-center text-gray-400 py-10">No messages yet. Say hi 👋</p>}
-          {ws.messages.map((m) => {
-            const sid = typeof m.senderId === 'string' ? m.senderId : m.senderId?._id;
-            const mine = sid === user?.id;
-            const name = typeof m.senderId === 'object' ? m.senderId?.fullName : 'User';
-            return (
-              <div key={m._id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] px-3 py-2 rounded-2xl ${mine ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
-                  {!mine && <p className="text-xs font-medium mb-0.5 opacity-80">{name}</p>}
-                  <p className="text-sm whitespace-pre-wrap">{m.content}</p>
-                  <p className={`text-[10px] mt-1 ${mine ? 'text-blue-100' : 'text-gray-500'}`}>
-                    {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-          <div ref={endRef} />
-        </div>
-        <div className="flex gap-2 pt-3 border-t">
-          <Input value={text} onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), send())}
-            placeholder="Type a message…" />
-          <Button onClick={send} className="flex items-center gap-1"><Send className="w-4 h-4" /> Send</Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// ============= WHITEBOARD =============
-function TeamWhiteboard({ teamId, ws, setWs }: { teamId: string; ws: Workspace; setWs: (w: Workspace) => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing = useRef(false);
-  const currentStroke = useRef<{ color: string; width: number; points: number[][] } | null>(null);
-  const [color, setColor] = useState('#1d3557');
-  const [width, setWidth] = useState(3);
-
-  const drawStroke = (s: WhiteboardStroke) => {
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx || !s.points?.length) return;
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = s.width;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    s.points.forEach((p, i) => {
-      const [x, y] = p;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  };
-
-  const redrawAll = () => {
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx || !canvasRef.current) return;
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    ws.whiteboard.forEach(drawStroke);
-  };
-
-  useEffect(() => { redrawAll(); /* eslint-disable-next-line */ }, [ws.whiteboard.length]);
-
-  useEffect(() => {
-    socketService.onWhiteboardStroke((data: any) => {
-      if (data.teamId !== teamId) return;
-      setWs({ ...ws, whiteboard: [...ws.whiteboard, data.stroke] });
-      drawStroke(data.stroke);
-    });
-    socketService.onWhiteboardClear((data: any) => {
-      if (data.teamId !== teamId) return;
-      setWs({ ...ws, whiteboard: [] });
-    });
-    return () => {
-      socketService.offWhiteboardStroke();
-      socketService.offWhiteboardClear();
-    };
-    // eslint-disable-next-line
-  }, [teamId, ws]);
-
-  const getPos = (e: React.MouseEvent | React.TouchEvent) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    return [clientX - rect.left, clientY - rect.top];
-  };
-
-  const start = (e: React.MouseEvent | React.TouchEvent) => {
-    drawing.current = true;
-    currentStroke.current = { color, width, points: [getPos(e)] };
-  };
-
-  const move = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!drawing.current || !currentStroke.current) return;
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) return;
-    const pos = getPos(e);
-    const pts = currentStroke.current.points;
-    pts.push(pos);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(pts[pts.length - 2][0], pts[pts.length - 2][1]);
-    ctx.lineTo(pos[0], pos[1]);
-    ctx.stroke();
-  };
-
-  const end = async () => {
-    if (!drawing.current || !currentStroke.current) return;
-    drawing.current = false;
-    const stroke = currentStroke.current;
-    currentStroke.current = null;
-    if (stroke.points.length < 2) return;
-    try {
-      const saved = await teamService.addStroke(teamId, stroke);
-      setWs({ ...ws, whiteboard: [...ws.whiteboard, saved] });
-      socketService.emitWhiteboardStroke({ teamId, stroke: saved });
-    } catch (e) { console.error(e); }
-  };
-
-  const clearAll = async () => {
-    if (!confirm('Clear the whiteboard for everyone?')) return;
-    await teamService.clearWhiteboard(teamId);
-    setWs({ ...ws, whiteboard: [] });
-    socketService.emitWhiteboardClear({ teamId });
-  };
-
-  return (
-    <Card>
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
-        <label className="flex items-center gap-1 text-sm">Color
-          <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
-        </label>
-        <label className="flex items-center gap-1 text-sm">Width
-          <input type="range" min={1} max={12} value={width} onChange={(e) => setWidth(Number(e.target.value))} />
-          <span className="text-xs w-6 text-gray-600">{width}px</span>
-        </label>
-        <Button variant="outline" size="sm" onClick={clearAll} className="ml-auto flex items-center gap-1 text-red-600 border-red-300">
-          <Eraser className="w-4 h-4" /> Clear
-        </Button>
-      </div>
-      <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-        <canvas
-          ref={canvasRef}
-          width={900}
-          height={500}
-          className="w-full touch-none cursor-crosshair"
-          onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end}
-          onTouchStart={start} onTouchMove={move} onTouchEnd={end}
-        />
-      </div>
-      <p className="text-xs text-gray-500 mt-2">Real-time collaborative whiteboard. Drawings are persisted and synced to all team members.</p>
-    </Card>
   );
 }
 
@@ -370,57 +169,7 @@ function TeamTasks({ teamId, ws, setWs }: { teamId: string; ws: Workspace; setWs
   );
 }
 
-// ============= NOTES =============
-function TeamNotes({ teamId, ws, setWs }: { teamId: string; ws: Workspace; setWs: (w: Workspace) => void }) {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-
-  const add = async () => {
-    if (!content.trim()) return;
-    const n = await teamService.addNote(teamId, { title: title.trim(), content: content.trim() });
-    setWs({ ...ws, notes: [...ws.notes, n] });
-    setTitle(''); setContent('');
-  };
-
-  const remove = async (id: string) => {
-    await teamService.deleteNote(teamId, id);
-    setWs({ ...ws, notes: ws.notes.filter((n) => n._id !== id) });
-  };
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <div className="space-y-2">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Note title (optional)" />
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" placeholder="Note content…" />
-          <Button onClick={add} className="flex items-center gap-1"><Plus className="w-4 h-4" /> Add Note</Button>
-        </div>
-      </Card>
-      <div className="grid md:grid-cols-2 gap-3">
-        {ws.notes.map((n) => (
-          <Card key={n._id}>
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                {n.title && <h4 className="font-semibold text-gray-900 mb-1">{n.title}</h4>}
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{n.content}</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {n.authorId?.fullName} · {new Date(n.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <button onClick={() => remove(n._id)} className="text-gray-400 hover:text-red-600">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </Card>
-        ))}
-        {ws.notes.length === 0 && <p className="text-gray-500 col-span-full text-center py-6">No notes yet.</p>}
-      </div>
-    </div>
-  );
-}
-
-// ============= ROADMAP / PIPELINE =============
+// ============= ROADMAP =============
 function TeamRoadmap({ teamId, ws, setWs }: { teamId: string; ws: Workspace; setWs: (w: Workspace) => void }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -435,7 +184,8 @@ function TeamRoadmap({ teamId, ws, setWs }: { teamId: string; ws: Workspace; set
     if (!title.trim()) return;
     const r = await teamService.addRoadmap(teamId, { title: title.trim(), description: description.trim(), stage: 'planned' });
     setWs({ ...ws, roadmap: [...ws.roadmap, r] });
-    setTitle(''); setDescription('');
+    setTitle('');
+    setDescription('');
   };
 
   const moveStage = async (id: string, stage: any) => {
@@ -488,33 +238,5 @@ function TeamRoadmap({ teamId, ws, setWs }: { teamId: string; ws: Workspace; set
         })}
       </div>
     </div>
-  );
-}
-
-// ============= ACTIVITY LOG =============
-function TeamActivity({ ws }: { ws: Workspace }) {
-  const items = [...ws.activity].reverse();
-  return (
-    <Card>
-      <h3 className="font-semibold text-gray-900 mb-3">Recent Activity</h3>
-      <div className="space-y-2 max-h-[480px] overflow-y-auto">
-        {items.length === 0 && <p className="text-gray-500 text-center py-6">No activity yet.</p>}
-        {items.map((a) => (
-          <div key={a._id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-semibold">
-              {(a.userId?.fullName || '?').charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-900">
-                <span className="font-medium">{a.userId?.fullName || 'Someone'}</span>{' '}
-                <span className="text-gray-600">{a.action.replace(/_/g, ' ')}</span>
-                {a.meta?.title && <span className="text-gray-500"> — "{a.meta.title}"</span>}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">{new Date(a.createdAt).toLocaleString()}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
   );
 }

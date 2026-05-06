@@ -184,7 +184,7 @@ export function AdminDashboard() {
           className="relative"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20 backdrop-blur-xl rounded-2xl" />
-          <Card className="relative bg-white/40 backdrop-blur-sm border border-white/50">
+          {/* <Card className="relative bg-white/40 backdrop-blur-sm border border-white/50">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
             <div className="space-y-4">
               {posts.slice(0, 5).map((post, idx) => {
@@ -215,7 +215,7 @@ export function AdminDashboard() {
                 );
               })}
             </div>
-          </Card>
+          </Card> */}
         </motion.div>
       </div>
     </div>

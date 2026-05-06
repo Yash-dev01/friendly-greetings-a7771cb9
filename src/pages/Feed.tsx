@@ -113,7 +113,7 @@ export function Feed() {
             </div>
 
             {/* Stats (optional static for now) */}
-            <div className="space-y-3 pt-4 border-t border-gray-200">
+            {/* <div className="space-y-3 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Profile viewers</span>
                 <span className="font-bold text-gray-900">--</span>
@@ -122,7 +122,7 @@ export function Feed() {
                 <span className="text-gray-600">Post impressions</span>
                 <span className="font-bold text-gray-900">--</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </Card>
       </aside>
@@ -256,7 +256,7 @@ export function Feed() {
                   )}
 
                   {/* Actions */}
-                  <div className="pt-4 border-t border-gray-200 flex justify-around text-gray-600">
+                  {/* <div className="pt-4 border-t border-gray-200 flex justify-around text-gray-600">
                     <Button
                       size="sm"
                       variant="outline"
@@ -283,7 +283,7 @@ export function Feed() {
                     >
                       <Share2 className="w-4 h-4" />
                     </Button>
-                  </div>
+                  </div> */}
                 </Card>
               </motion.div>
             ))}

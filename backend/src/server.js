@@ -68,7 +68,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 🔥 ROUTES
+// ROUTES
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -91,7 +91,7 @@ app.use('/api/profile', profileRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
-// ❗404 Handler
+//404 Handler
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });

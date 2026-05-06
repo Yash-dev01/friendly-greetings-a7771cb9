@@ -72,8 +72,8 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         { id: 'mentorship', label: 'Mentorship', icon: Users },
         { id: 'newsletters', label: 'Newsletters', icon: Newspaper },
         { id: 'gallery', label: 'Gallery', icon: Image },
-        { id: 'archives', label: 'Archives', icon: Archive },
-        { id: 'games', label: 'Games', icon: Gamepad2 },
+      //  { id: 'archives', label: 'Archives', icon: Archive },
+        //{ id: 'games', label: 'Games', icon: Gamepad2 },
         { id: 'teams', label: 'Team Creation', icon: UserPlus },
         { id: 'profile', label: 'Profile', icon: UserCircle },
       ];
@@ -86,8 +86,8 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
       { id: 'mentorship', label: 'Mentorship', icon: Users },
       { id: 'newsletters', label: 'Newsletters', icon: Newspaper },
       { id: 'gallery', label: 'Gallery', icon: Image },
-      { id: 'archives', label: 'Archives', icon: Archive },
-      { id: 'games', label: 'Games', icon: Gamepad2 },
+     // { id: 'archives', label: 'Archives', icon: Archive },
+      //{ id: 'games', label: 'Games', icon: Gamepad2 },
       { id: 'teams', label: 'My Teams', icon: UserPlus },
       { id: 'profile', label: 'Profile', icon: UserCircle },
     ];
